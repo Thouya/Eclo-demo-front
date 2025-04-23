@@ -7,47 +7,64 @@
       v-bind="getProps(block)"
     >
       <template v-if="block.children">
-        <RichTextRenderer :document="block.children" />
+        <RichTextRenderer
+          :document="block.children"
+          :customClasses="customClasses"
+        />
       </template>
-      <template v-else-if="block.text">
-        {{ block.text }}
+      <template v-else-if="block.text != null">
+        <span v-if="block.bold" :class="customClasses?.['bold'] || ''">{{
+          block.text
+        }}</span>
+        <span
+          v-else-if="block.italic"
+          :class="customClasses?.['italic'] || ''"
+          >{{ block.text }}</span
+        >
+        <span
+          v-else-if="block.underline"
+          :class="customClasses?.['underline'] || ''"
+          >{{ block.text }}</span
+        >
+        <template v-else>{{ block.text }}</template>
       </template>
     </component>
   </div>
 </template>
 
 <script setup lang="ts">
-defineProps<{
+const props = defineProps<{
   document: any[];
+  customClasses?: Record<string, string>;
 }>();
 
-const resolveNode = (block: any) => {
+const resolveNode = (block: any): string => {
   switch (block.type) {
     case 'paragraph':
       return 'p';
     case 'heading':
-      return `h${block.level || 2}`;
+      const level =
+        typeof block.level === 'number' && block.level >= 1 && block.level <= 6
+          ? block.level
+          : 2;
+      return `h${level}`;
     case 'list':
       return block.format === 'ordered' ? 'ol' : 'ul';
     case 'listItem':
       return 'li';
     case 'quote':
       return 'blockquote';
+    case 'text':
+      return 'span';
     default:
       return 'div';
   }
 };
 
 const getProps = (block: any) => {
-  const classMap: Record<string, string> = {
-    paragraph: 'mb-4 text-gray-800',
-    heading: 'font-bold my-4 text-xl',
-    list: 'pl-5 list-disc',
-    listItem: 'mb-1',
-    quote: 'border-l-4 pl-4 italic text-gray-600 border-gray-300',
-  };
+  const blockClass = props.customClasses?.[block.type] || '';
   return {
-    class: classMap[block.type] || '',
+    class: blockClass,
   };
 };
 </script>
