@@ -22,13 +22,11 @@ export default defineNuxtConfig({
       tailwindcss(),
     ],
   },
-  modules: ['@nuxtjs/strapi'],
-  strapi: {
-    url: process.env.STRAPI_URL || 'http://localhost:1337',
-    token: process.env.STRAPI_TOKEN,
-    prefix: '/api',
-    version: 'v5',
-  },
   ssr: true,
   target: 'static',
+  runtimeConfig: {
+    public: {
+      strapiURL: 'http://localhost:1337/api'
+    }
+  }
 })
