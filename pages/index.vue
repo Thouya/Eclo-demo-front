@@ -1,49 +1,29 @@
 <template>
   <ClientOnly>
-    <Transition name="fade" appear>
-      <div
-        v-if="heroSection"
-        :style="{ backgroundImage: `url(${heroImageUrl})` }"
-        class="hero-container h-[95vh] flex flex-col justify-center items-center bg-cover bg-center rounded-4xl m-[1%] p-[5%]"
-      >
-        <div class="hero-title">
-          <h1 class="h1 uppercase font-bold text-center">
-            {{ heroSection.titre }}
-          </h1>
-        </div>
-        <div class="hero-text text-white">
-          <RichTextRenderer
-            v-if="heroSection.texte"
-            :document="heroSection.texte"
-            :customClasses="richTextClasses"
-            class="text-center text-white"
-          />
-        </div>
-        <a
-          :href="heroSection.bouton_lien"
-          class="px-6 mb-[15%] py-2 bg-white text-black rounded-lg font-bold transform hover:-translate-y-1 transition duration-400"
-        >
-          {{ heroSection.bouton_text }}
-        </a>
-      </div>
-    </Transition>
+    <heroSection
+      v-if="heroSection"
+      :title="heroSection.titre"
+      :textDocument="heroSection.texte"
+      :buttonText="heroSection.bouton_text"
+      :buttonLink="heroSection.bouton_lien"
+      :backgroundImageUrl="heroImageUrl"
+    />
+
+    <sideImageSection
+      v-if="sideImageSection"
+      :title="sideImageSection.Titre"
+      :textDocument="sideImageSection.texte"
+      :ImageUrl="sideImageUrl"
+      :ImagePosition="sideImageSection.image_position"
+    />
   </ClientOnly>
 </template>
 
 <script setup lang="ts">
-import RichTextRenderer from '~/components/fonction/RichTextRenderer.vue';
+import HeroSection from '~/components/section/HeroSection.vue';
+import SideImageSection from '~/components/section/SideImageSection.vue';
 
 const config = useRuntimeConfig();
-
-// Define custom classes for rich text elements
-const richTextClasses = {
-  paragraph: 'text-white text-xl font-light mb-6',
-  heading: 'text-white font-bold my-6 text-2xl',
-  list: 'pl-5 list-disc text-white',
-  listItem: 'mb-2 text-white',
-  quote: 'border-l-4 pl-4 italic text-white border-white-300',
-  bold: 'font-bold text-white',
-};
 
 interface PageTest {
   data: Array<{
@@ -86,6 +66,11 @@ const heroSection = computed(() => {
   return result;
 });
 
+const sideImageSection = computed(() => {
+  const result = getSectionByType('section.texte-image');
+  return result;
+});
+
 const heroImageUrl = computed(() => {
   const imageObject = heroSection.value?.image;
   const relativeUrl = imageObject?.url;
@@ -97,7 +82,16 @@ const heroImageUrl = computed(() => {
   return null;
 });
 
-console.log(heroImageUrl);
+const sideImageUrl = computed(() => {
+  const imageObject = sideImageSection.value?.image;
+  const relativeUrl = imageObject?.url;
+
+  if (relativeUrl) {
+    const baseUrl = config.public.strapiURL.replace('/api', '');
+    return baseUrl + relativeUrl;
+  }
+  return null;
+});
 </script>
 
 <style>
