@@ -16,6 +16,25 @@
       :ImageUrl="sideImageUrl"
       :ImagePosition="sideImageSection.image_position"
     />
+
+    <UCarousel
+      v-slot="{ item }"
+      arrows
+      :items="items"
+      :loop="true"
+      :ui="{
+        item: 'w-full transition-opacity [&:not(.is-snapped)]:opacity-30 [&.is-snapped]:opacity-100',
+      }"
+      class="mx-auto w-full"
+    >
+      <img
+        :src="String(item || '')"
+        width="300"
+        height="300"
+        class="rounded-lg object-cover"
+        style="width: 300px; height: 300px"
+      />
+    </UCarousel>
   </ClientOnly>
 </template>
 
@@ -71,6 +90,11 @@ const sideImageSection = computed(() => {
   return result;
 });
 
+const carouselSection = computed(() => {
+  const result = getSectionByType('section.carousel');
+  return result;
+});
+
 const heroImageUrl = computed(() => {
   const imageObject = heroSection.value?.image;
   const relativeUrl = imageObject?.url;
@@ -91,6 +115,14 @@ const sideImageUrl = computed(() => {
     return baseUrl + relativeUrl;
   }
   return null;
+});
+
+const items = computed(() => {
+  return (
+    carouselSection.value?.images?.map((img: { url: string }) => {
+      return config.public.strapiURL.replace('/api', '') + img.url;
+    }) ?? []
+  );
 });
 </script>
 
