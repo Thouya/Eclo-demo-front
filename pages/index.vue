@@ -20,7 +20,7 @@
     <CarouselSection
       v-if="carouselItems && carouselItems.length"
       :items="carouselItems"
-      :items-to-show-default="3"
+      :items-to-show-default="4"
       :items-to-show-small-screen="2"
       :loop="true"
       gap-size="8px"
