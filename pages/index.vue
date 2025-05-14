@@ -28,6 +28,18 @@
       class="my-8"
     />
     <div v-else-if="pending">Chargement du carrousel...</div>
+
+    <div
+      class="kpis-container flex justify-center flex-wrap gap-8 mt-16 mb-16 w-[90%] mx-auto lg:flex-nowrap"
+    >
+      <KPISection
+        v-for="kpi in kpiSectionData"
+        :key="kpi.id"
+        class="basis-full sm:basis-1/2 lg:basis-1/3"
+        :number="kpi.valeur"
+        :text="kpi.libelle"
+      />
+    </div>
   </ClientOnly>
 </template>
 
@@ -35,6 +47,7 @@
 import HeroSection from '~/components/section/HeroSection.vue';
 import SideImageSection from '~/components/section/SideImageSection.vue';
 import CarouselSection from '~/components/section/CarouselSection.vue';
+import KPISection from '~/components/section/KPISection.vue';
 
 const config = useRuntimeConfig();
 
@@ -87,6 +100,11 @@ const sideImageSection = computed(() => {
 const carouselSectionData = computed(() => {
   const result = getSectionByType('section.carousel');
   return result;
+});
+
+const kpiSectionData = computed(() => {
+  const result = getSectionByType('section.chiffres');
+  return result?.statistiques || [];
 });
 
 const heroImageUrl = computed(() => {
