@@ -17,30 +17,24 @@
       :ImagePosition="sideImageSection.image_position"
     />
 
-    <UCarousel
-      v-slot="{ item }"
-      arrows
-      :items="items"
+    <CarouselSection
+      v-if="carouselItems && carouselItems.length"
+      :items="carouselItems"
+      :items-to-show-default="3"
+      :items-to-show-small-screen="2"
       :loop="true"
-      :ui="{
-        item: 'w-full transition-opacity [&:not(.is-snapped)]:opacity-30 [&.is-snapped]:opacity-100',
-      }"
-      class="mx-auto w-full"
-    >
-      <img
-        :src="String(item || '')"
-        width="300"
-        height="300"
-        class="rounded-lg object-cover"
-        style="width: 300px; height: 300px"
-      />
-    </UCarousel>
+      gap-size="8px"
+      container-width-class="w-[90%]"
+      class="my-8"
+    />
+    <div v-else-if="pending">Chargement du carrousel...</div>
   </ClientOnly>
 </template>
 
 <script setup lang="ts">
 import HeroSection from '~/components/section/HeroSection.vue';
 import SideImageSection from '~/components/section/SideImageSection.vue';
+import CarouselSection from '~/components/section/CarouselSection.vue';
 
 const config = useRuntimeConfig();
 
@@ -90,7 +84,7 @@ const sideImageSection = computed(() => {
   return result;
 });
 
-const carouselSection = computed(() => {
+const carouselSectionData = computed(() => {
   const result = getSectionByType('section.carousel');
   return result;
 });
@@ -117,12 +111,37 @@ const sideImageUrl = computed(() => {
   return null;
 });
 
-const items = computed(() => {
-  return (
-    carouselSection.value?.images?.map((img: { url: string }) => {
-      return config.public.strapiURL.replace('/api', '') + img.url;
-    }) ?? []
-  );
+interface StrapiImage {
+  id: number;
+  url: string;
+  alternativeText?: string | null;
+  caption?: string | null;
+  // ... autres champs de l'image Strapi
+}
+
+interface StrapiLegend {
+  id: number;
+  texte: string;
+}
+
+const carouselItems = computed(() => {
+  const images = carouselSectionData.value?.images as StrapiImage[] | undefined;
+  const legends = carouselSectionData.value?.legendes as
+    | StrapiLegend[]
+    | undefined;
+
+  if (!images || images.length === 0) {
+    return [];
+  }
+
+  return images.map((img, index) => {
+    const baseUrl = config.public.strapiURL.replace('/api', '');
+    return {
+      url: baseUrl + img.url,
+      alt: img.alternativeText || `Image du carrousel ${index + 1}`,
+      legend: legends?.[index]?.texte || '', // Associe la légende par index
+    };
+  });
 });
 </script>
 
