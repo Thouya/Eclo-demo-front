@@ -1,6 +1,9 @@
 <template>
   <!-- Le FormField principal pour le groupe de checkboxes -->
-  <FormField :name="props.id" v-slot="{ field, errors }">
+  <FormField
+    :name="props.id"
+    v-slot="{ value: groupValue, handleChange: groupHandleChange, errors }"
+  >
     <FormItem>
       <div class="mb-4">
         <FormLabel class="text-base"> {{ label }} </FormLabel>
@@ -9,37 +12,37 @@
         </FormDescription>
       </div>
 
-      <!-- Boucle sur les options pour créer chaque checkbox -->
-      <div
+      <!-- Boucle sur les options -->
+      <FormField
         v-for="option in options"
         :key="option.id"
-        class="flex items-center space-x-3 mb-2"
+        type="checkbox"
+        :value="option.id"
+        :checked="groupValue?.includes(option.id)"
+        :name="props.id"
+        v-slot="{ value: checkboxValue, handleChange: checkboxHandleChange }"
       >
-        <FormControl>
-          <Checkbox
-            :id="`${props.id}-${option.id}`"
-            :value="option.id"
-            :checked="modelValue?.includes(option.id)"
-            @update:checked="
-              (checkedState: boolean | 'indeterminate') =>
-                handleCheckboxChange(checkedState, option.id, field)
-            "
-            :required="required && (!modelValue || modelValue.length === 0)"
-            :aria-describedby="
-              errors.length ? `${props.id}-form-item-message` : undefined
-            "
-          />
-        </FormControl>
-        <FormLabel
-          :for="`${props.id}-${option.id}`"
-          class="font-normal cursor-pointer"
-        >
-          {{ option.label }}
-        </FormLabel>
-      </div>
-      <!-- Afficher le message d'erreur global pour le groupe -->
+        <FormItem class="flex flex-row items-start space-x-3 space-y-0 mb-2">
+          <FormControl>
+            <Checkbox
+              :checked="checkboxValue?.includes(option.id)"
+              @update:checked="checkboxHandleChange"
+              :required="required && (!groupValue || groupValue.length === 0)"
+              :aria-describedby="
+                errors.length
+                  ? `${props.id}-${option.id}-form-item-message`
+                  : undefined
+              "
+            />
+          </FormControl>
+          <FormLabel class="font-normal cursor-pointer">
+            {{ option.label }}
+          </FormLabel>
+        </FormItem>
+      </FormField>
+
       <FormMessage :id="`${props.id}-form-item-message`" />
-      <!-- Ou un message d'erreur personnalisé si props.error est fourni -->
+      <!-- Message d'erreur global pour le groupe -->
       <p v-if="props.error && !errors.length" class="text-sm text-red-500 mt-1">
         {{ props.error }}
       </p>
@@ -58,57 +61,25 @@ import {
   FormMessage,
 } from '../ui/form';
 
-// Modèle pour v-model sur le composant FormCheckbox lui-même
-// Il contiendra un tableau des IDs des options cochées
-const modelValue = defineModel<string[]>({ default: () => [] }); // Initialiser avec un tableau vide
-
 const props = defineProps<{
   label: string;
-  id: string; // ID de base pour le groupe de checkboxes, utilisé aussi comme 'name' pour FormField
+  id: string; // Utilisé comme 'name' pour les FormFields
   description?: string;
-  // size: string; // La prop size n'est généralement pas standard pour les checkboxes shadcn
   required?: boolean;
-  error?: string; // Pour afficher un message d'erreur personnalisé
+  error?: string;
   options: {
     id: string;
     label: string;
   }[];
 }>();
 
-// Gère le changement d'état d'une checkbox individuelle
-function handleCheckboxChange(
-  checked: boolean | 'indeterminate',
-  optionId: string,
-  fieldApi: any
-) {
-  // On ne gère que les états booléens (checked/unchecked)
-  if (typeof checked === 'boolean') {
-    // S'assurer que modelValue.value est un tableau
-    const currentValue = Array.isArray(modelValue.value)
-      ? [...modelValue.value]
-      : [];
-
-    if (checked) {
-      if (!currentValue.includes(optionId)) {
-        currentValue.push(optionId);
-      }
-    } else {
-      const index = currentValue.indexOf(optionId);
-      if (index > -1) {
-        currentValue.splice(index, 1);
-      }
-    }
-    modelValue.value = currentValue; // Met à jour le v-model du composant FormCheckbox
-
-    // Informe le FormField parent du changement (si vee-validate est utilisé par shadcn-vue)
-    if (fieldApi && typeof fieldApi.handleChange === 'function') {
-      fieldApi.handleChange(modelValue.value);
-    } else if (fieldApi && typeof fieldApi.setValue === 'function') {
-      // Autre API possible pour FormField
-      fieldApi.setValue(modelValue.value);
-    }
-  }
-}
+// J'ai aussi ajusté l'aria-describedby pour qu'il soit potentiellement unique si besoin,
+// bien que le FormMessage global soit probablement suffisant.
+// L'ID pour aria-describedby sur la checkbox devrait pointer vers l'ID du FormMessage qui affiche l'erreur.
+// Si FormMessage a un ID auto-généré, il faudrait le récupérer.
+// Pour l'instant, on peut simplifier :
+// :aria-describedby="errors.length ? `${props.id}-form-item-message` : undefined"
+// et s'assurer que le FormMessage a bien cet ID.
 </script>
 
 <style scoped></style>
