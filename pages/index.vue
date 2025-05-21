@@ -40,6 +40,8 @@
         :text="kpi.libelle"
       />
     </div>
+
+    <FormSection />
   </ClientOnly>
 </template>
 
@@ -48,6 +50,7 @@ import HeroSection from '~/components/section/HeroSection.vue';
 import SideImageSection from '~/components/section/SideImageSection.vue';
 import CarouselSection from '~/components/section/CarouselSection.vue';
 import KPISection from '~/components/section/KPISection.vue';
+import FormSection from '~/components/section/FormSection.vue';
 
 const config = useRuntimeConfig();
 

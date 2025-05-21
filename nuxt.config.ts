@@ -16,11 +16,23 @@ export default defineNuxtConfig({
     '@nuxt/test-utils',
     '@nuxt/ui',
     '@nuxtjs/strapi',
+    'shadcn-nuxt'
   ],
   vite: {
     plugins: [
       tailwindcss(),
     ],
+  },
+  shadcn: {
+    /**
+         * Prefix for all the imported component
+         */
+    prefix: '',
+    /**
+     * Directory that the component lives in.
+     * @default "./components/ui"
+     */
+    componentDir: './components/ui',
   },
   ssr: true,
   target: 'static',
